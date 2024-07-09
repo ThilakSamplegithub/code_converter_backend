@@ -1,76 +1,99 @@
-const express = require('express');
-const axios = require('axios');
-const cors=require('cors')
-require('dotenv').config()
+const express = require("express");
+const axios = require("axios");
+const cors = require("cors");
+require("dotenv").config();
 const app = express();
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 const port = process.env.PORT;
 // Replace with your OpenAI API key
 const apiKey = process.env.OPENAI_API_KEY;
-app.get("/",(req,res)=>{
-    res.status(200).send(`welcome to code converter app`)
-})
-app.post('/convert', async (req, res) => {
+app.get("/", (req, res) => {
+  res.status(200).send(`welcome to code converter app`);
+});
+app.post("/convert", async (req, res) => {
   try {
     const { code, targetLanguage } = req.body;
-    console.log(apiKey,"is apikey")
+    console.log(apiKey, "is apikey");
     // Construct a prompt for code conversion
     const prompt = `Convert the following code into ${targetLanguage}:${code}`;
 
     // Set up data for the OpenAI API request
     const data = {
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'system', content: 'You are a helpful assistant that translates code.' }, { role: 'user', content: prompt }],
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant that translates code.",
+        },
+        { role: "user", content: prompt },
+      ],
     };
 
     // Make a POST request to the OpenAI API
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', data, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-    });
-console.log(response.data.choices,'are responses')
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
+    console.log(response.data.choices, "are responses");
     const convertedCode = response.data.choices[0].message.content;
-    // const cleanCode = convertedCode.replace(/\\/g, '');
+    // no problem even if I get code in /n. Think as its new line in front end
     res.status(201).json({ convertedCode });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred during code conversion.' });
+    res
+      .status(500)
+      .json({ error: "An error occurred during code conversion." });
   }
 });
 
-app.post('/debug', async (req, res) => {
-try {
-const { code } = req.body;
+app.post("/debug", async (req, res) => {
+  try {
+    const { code } = req.body;
 
-// Construct a prompt for debugging
-const prompt = `Identify the errors in the following code and provide suggestions for fixes:\n${code}`;
+    // Construct a prompt for debugging
+    const prompt = `Identify the errors in the following code and provide suggestions for fixes:\n${code}`;
 
-// Set up data for the OpenAI API request
-const data = {
-  model: 'gpt-3.5-turbo',
-  messages: [{ role: 'system', content: 'You are a helpful assistant that assists with debugging code.' }, { role: 'user', content: prompt }],
-};
+    // Set up data for the OpenAI API request
+    const data = {
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful assistant that assists with debugging code.",
+        },
+        { role: "user", content: prompt },
+      ],
+    };
 
-// Make a POST request to the OpenAI API for code debugging
-const response = await axios.post('https://api.openai.com/v1/chat/completions', data, {
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`,
-  },
-});
+    // Make a POST request to the OpenAI API for code debugging
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
 
-const debugSuggestions = response.data.choices[0].message.content;
-res.json({ debugSuggestions });
-} catch (error) {
-console.error(error);
-res.status(500).json({ error: 'An error occurred during code debugging.' });
-}
+    const debugSuggestions = response.data.choices[0].message.content;
+    res.json({ debugSuggestions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred during code debugging." });
+  }
 });
 // to check quality of code
-app.post('/quality', async (req, res) => {
+app.post("/quality", async (req, res) => {
   try {
     const { code } = req.body;
 
@@ -104,23 +127,35 @@ app.post('/quality', async (req, res) => {
 
     // Set up data for the OpenAI API request
     const data = {
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'system', content: 'You are a helpful assistant that checks code quality.' }, { role: 'user', content: prompt }],
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant that checks code quality.",
+        },
+        { role: "user", content: prompt },
+      ],
     };
 
     // Make a POST request to the OpenAI API for code quality check
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', data, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-    });
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
 
     const qualityCheckResult = response.data.choices[0].message.content;
     res.json({ qualityCheckResult });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'An error occurred while checking code quality.' });
+    res
+      .status(500)
+      .json({ error: "An error occurred while checking code quality." });
   }
 });
 
